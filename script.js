@@ -1,75 +1,63 @@
-// Canvas setup
+// Get canvas and context
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-canvas.width = 800;
-canvas.height = 600;
 
 // Game variables
 let playerScore = 0;
-let aiScore = 0;
-let goalScore = 3;
-let round = 1;
-let playerPoints = 0;
-let ballSpeed = 5;
-let playerPaddle = { width: 20, height: 100, x: 10, y: canvas.height / 2 - 50, speed: 10 };
-let aiPaddle = { width: 20, height: 100, x: canvas.width - 30, y: canvas.height / 2 - 50, speed: 7 };
-let balls = [{ x: canvas.width / 2, y: canvas.height / 2, radius: 10, dx: ballSpeed, dy: ballSpeed }];
+let goalScore = 3; // Score to complete a round
+let roundInProgress = true; // Tracks if a round is currently being played
 
-// Power-ups (these can be expanded)
-const powerUps = [
-    { name: "Wider Paddle", effect: () => { playerPaddle.height += 20; }, cost: 5, rarity: "common" },
-    { name: "Faster Paddle", effect: () => { playerPaddle.speed += 2; }, cost: 10, rarity: "rare" },
-    { name: "Extra Ball", effect: () => { balls.push({ x: canvas.width / 2, y: canvas.height / 2, radius: 10, dx: ballSpeed, dy: ballSpeed }); }, cost: 15, rarity: "epic" }
-];
+// Shop variables
+const shop = document.getElementById("shop");
+const skipShopButton = document.getElementById("skipShop");
 
-// Game functions
-function drawPaddle(paddle) {
-    ctx.fillStyle = "white";
-    ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+// Function to open the shop
+function openShop() {
+    shop.style.display = 'block'; // Show shop
+    roundInProgress = false; // Stop the round while in shop
 }
 
-function drawBall(ball) {
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "red";
-    ctx.fill();
-    ctx.closePath();
+// Function to close the shop and continue to the next round
+function closeShop() {
+    shop.style.display = 'none'; // Hide shop
+    startNextRound(); // Start the next round
 }
 
-function updateBall(ball) {
-    ball.x += ball.dx;
-    ball.y += ball.dy;
-    if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) ball.dy = -ball.dy;
-    if (ball.x - ball.radius < 0) {
-        aiScore++;
-        resetBall(ball);
-    }
-    if (ball.x + ball.radius > canvas.width) {
-        playerScore++;
-        resetBall(ball);
-    }
+// Add event listener for the "Skip Shop" button
+skipShopButton.addEventListener('click', closeShop);
+
+// Function to start the next round
+function startNextRound() {
+    console.log("Starting next round");
+    playerScore = 0; // Reset player score
+    goalScore += 2;  // Increase the goal score for the next round
+    roundInProgress = true; // Resume game
+    // You can add more logic here to increase difficulty
 }
 
-function resetBall(ball) {
-    ball.x = canvas.width / 2;
-    ball.y = canvas.height / 2;
-    ball.dx = ballSpeed * (Math.random() > 0.5 ? 1 : -1);
-    ball.dy = ballSpeed * (Math.random() > 0.5 ? 1 : -1);
-}
-
-// Game loop
+// Simple game loop for now (for demo purposes)
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (roundInProgress) {
+        // Basic gameplay logic
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
 
-    // Draw paddles and balls
-    drawPaddle(playerPaddle);
-    drawPaddle(aiPaddle);
-    balls.forEach(ball => {
-        drawBall(ball);
-        updateBall(ball);
-    });
+        // Simulate scoring (for demo)
+        playerScore++;
 
-    requestAnimationFrame(gameLoop);
+        // Check if player reached the goal score
+        if (playerScore >= goalScore) {
+            console.log("Round completed!");
+            openShop(); // Open shop after round
+        }
+
+        // Draw score
+        ctx.fillStyle = "white";
+        ctx.font = "20px Arial";
+        ctx.fillText("Score: " + playerScore, 10, 20);
+        ctx.fillText("Goal: " + goalScore, 10, 50);
+    }
+
+    requestAnimationFrame(gameLoop); // Continue game loop
 }
 
 // Start the game loop
