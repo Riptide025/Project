@@ -1,57 +1,76 @@
-const cells = document.querySelectorAll('[data-cell]');
-const gameBoard = document.getElementById('gameBoard');
-const restartButton = document.getElementById('restartButton');
-let currentPlayer = 'X';
-let gameActive = true;
-const board = Array(9).fill(null);
+// Canvas setup
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = 800;
+canvas.height = 600;
 
-const winningCombinations = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
+// Game variables
+let playerScore = 0;
+let aiScore = 0;
+let goalScore = 3;
+let round = 1;
+let playerPoints = 0;
+let ballSpeed = 5;
+let playerPaddle = { width: 20, height: 100, x: 10, y: canvas.height / 2 - 50, speed: 10 };
+let aiPaddle = { width: 20, height: 100, x: canvas.width - 30, y: canvas.height / 2 - 50, speed: 7 };
+let balls = [{ x: canvas.width / 2, y: canvas.height / 2, radius: 10, dx: ballSpeed, dy: ballSpeed }];
+
+// Power-ups (these can be expanded)
+const powerUps = [
+    { name: "Wider Paddle", effect: () => { playerPaddle.height += 20; }, cost: 5, rarity: "common" },
+    { name: "Faster Paddle", effect: () => { playerPaddle.speed += 2; }, cost: 10, rarity: "rare" },
+    { name: "Extra Ball", effect: () => { balls.push({ x: canvas.width / 2, y: canvas.height / 2, radius: 10, dx: ballSpeed, dy: ballSpeed }); }, cost: 15, rarity: "epic" }
 ];
 
-function handleClick(event) {
-    const cell = event.target;
-    const cellIndex = Array.from(cells).indexOf(cell);
+// Game functions
+function drawPaddle(paddle) {
+    ctx.fillStyle = "white";
+    ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+}
 
-    if (board[cellIndex] || !gameActive) {
-        return;
+function drawBall(ball) {
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
+}
+
+function updateBall(ball) {
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+    if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) ball.dy = -ball.dy;
+    if (ball.x - ball.radius < 0) {
+        aiScore++;
+        resetBall(ball);
     }
-
-    board[cellIndex] = currentPlayer;
-    cell.innerText = currentPlayer;
-
-    if (checkWin(currentPlayer)) {
-        alert(`${currentPlayer} wins!`);
-        gameActive = false;
-    } else if (board.every(cell => cell !== null)) {
-        alert('It\'s a tie!');
-        gameActive = false;
-    } else {
-        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+    if (ball.x + ball.radius > canvas.width) {
+        playerScore++;
+        resetBall(ball);
     }
 }
 
-function checkWin(player) {
-    return winningCombinations.some(combination => {
-        return combination.every(index => {
-            return board[index] === player;
-        });
+function resetBall(ball) {
+    ball.x = canvas.width / 2;
+    ball.y = canvas.height / 2;
+    ball.dx = ballSpeed * (Math.random() > 0.5 ? 1 : -1);
+    ball.dy = ballSpeed * (Math.random() > 0.5 ? 1 : -1);
+}
+
+// Game loop
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw paddles and balls
+    drawPaddle(playerPaddle);
+    drawPaddle(aiPaddle);
+    balls.forEach(ball => {
+        drawBall(ball);
+        updateBall(ball);
     });
+
+    requestAnimationFrame(gameLoop);
 }
 
-function restartGame() {
-    board.fill(null);
-    cells.forEach(cell => cell.innerText = '');
-    currentPlayer = 'X';
-    gameActive = true;
-}
-
-cells.forEach(cell => cell.addEventListener('click', handleClick));
-restartButton.addEventListener('click', restartGame);
+// Start the game loop
+gameLoop();
