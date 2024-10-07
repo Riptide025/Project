@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiplayer Tic-Tac-Toe</title>
+    <title>Pong Roguelike</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Tic-Tac-Toe</h1>
-    <div class="game-board" id="gameBoard">
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-    </div>
-    <button id="restartButton">Restart Game</button>
+    <h1>Pong Roguelike</h1>
+    
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
 
+    <!-- Shop Popup (hidden initially) -->
+    <div id="shop" class="hidden">
+        <h2>Power-Up Shop</h2>
+        <p>Choose a power-up or skip</p>
+        <div id="powerups">
+            <!-- Power-ups will be dynamically inserted here -->
+        </div>
+        <button id="skipShop">Skip Shop</button>
+    </div>
+
+    <!-- JavaScript file linking -->
     <script src="script.js"></script>
 </body>
 </html>
